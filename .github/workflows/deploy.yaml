@@ -1,37 +1,66 @@
+# 
+# GitHub Actions workflow.
+#
+# Automatically deploys the Node.js microservice to Kubernetes on push to any branch. 
+# For real use you might want to restrict this to the "prod" branch.
+#
+
 name: Deploy microservice
 
 on:
-  push:
+  #
+  # Deploys the microservice on push to the main branch of this code repository.
+  #
+  push: 
     branches:
       - main
+
+  #
+  # Allows deployment to be invoked manually through the GitHub Actions user interface.
+  #
   workflow_dispatch: 
 
 jobs:
+
   deploy:
     runs-on: ubuntu-latest
     
     env:
-      VERSION: ${{ github.sha }}
-      CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
-      REGISTRY_UN: ${{ secrets.REGISTRY_UN }}
-      REGISTRY_PW: ${{ secrets.REGISTRY_PW }}
+      VERSION: ${{ github.sha }}  # Gets the SHA of the commit
+      CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}  # Your container registry
+      REGISTRY_UN: ${{ secrets.REGISTRY_UN }}  # Registry username
+      REGISTRY_PW: ${{ secrets.REGISTRY_PW }}  # Registry password
 
     steps:
+      
+      # Checks out your repository under $GITHUB_WORKSPACE.
       - uses: actions/checkout@v3
 
+      #
+      # Builds the Docker image.
+      #
       - name: Build
         run: ./scripts/build-image.sh
 
+      #
+      # Publishes the Docker image to the container registry.
+      #
       - name: Publish
         run: ./scripts/push-image.sh
 
+      #
+      # Installs Kubectl and connects it to the cluster.
+      #
+      # https://github.com/marketplace/actions/kubernetes-cli-kubectl
+      #
       - name: Setup Kubeconfig
         run: |
-          mkdir -p $HOME/.kube
-          echo "Base64 input length: ${#KUBE_CONFIG}"  # Output the length for debugging
           echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > $HOME/.kube/config
           tr -cd '\11\12\15\40-\176' < $HOME/.kube/config > $HOME/.kube/config.cleaned
           mv $HOME/.kube/config.cleaned $HOME/.kube/config
       
+      #
+      # Expands the configuration template and deploys the microservice.
+      #
       - name: Deploy
-        run: ./scripts/deploy.sh
+        run: ./scripts/deploy.sh  # Runs your deployment script
