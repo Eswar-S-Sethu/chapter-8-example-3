@@ -1,7 +1,7 @@
 const express = require("express");
 const fs = require("fs");
 
-const app = express(); // added this just for git 
+const app = express(); // added this just for github
 
 //
 // Throws an error if the PORT environment variable is missing.
