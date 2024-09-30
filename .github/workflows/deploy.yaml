@@ -26,14 +26,14 @@ jobs:
     runs-on: ubuntu-latest
     
     env:
-      VERSION: ${{ github.sha }}
-      CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
-      REGISTRY_UN: ${{ secrets.REGISTRY_UN }}
-      REGISTRY_PW: ${{ secrets.REGISTRY_PW  }}
+      VERSION: ${{ github.sha }}  # Gets the SHA of the commit
+      CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}  # Your container registry
+      REGISTRY_UN: ${{ secrets.REGISTRY_UN }}  # Registry username
+      REGISTRY_PW: ${{ secrets.REGISTRY_PW }}  # Registry password
 
     steps:
       
-      # Checks-out your repository under $GITHUB_WORKSPACE.
+      # Checks out your repository under $GITHUB_WORKSPACE.
       - uses: actions/checkout@v3
 
       #
@@ -53,13 +53,14 @@ jobs:
       #
       # https://github.com/marketplace/actions/kubernetes-cli-kubectl
       #
-      - uses: tale/kubectl-action@v1
-        with:
-          base64-kube-config: ${{ secrets.KUBE_CONFIG }}
-          kubectl-version: v1.24.2
+      - name: Setup Kubeconfig
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > $HOME/.kube/config
+          tr -cd '\11\12\15\40-\176' < $HOME/.kube/config > $HOME/.kube/config.cleaned
+          mv $HOME/.kube/config.cleaned $HOME/.kube/config
       
       #
       # Expands the configuration template and deploys the microservice.
       #
       - name: Deploy
-        run: ./scripts/deploy.sh
+        run: ./scripts/deploy.sh  # Runs your deployment script
