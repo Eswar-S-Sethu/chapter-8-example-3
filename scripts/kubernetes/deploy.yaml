@@ -21,9 +21,9 @@ spec:
       labels:
         app: video-streaming
     spec:
-      containers: 
+      containers:
       - name: video-streaming
-        image: $CONTAINER_REGISTRY/video-streaming:$VERSION
+        image: "${CONTAINER_REGISTRY}/video-streaming:${VERSION}"  # Ensure no extra spaces
         imagePullPolicy: IfNotPresent
         env:
         - name: PORT
