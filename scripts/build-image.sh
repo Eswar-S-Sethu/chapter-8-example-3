@@ -17,12 +17,12 @@ set -u # or set -o nounset
 : "${CONTAINER_REGISTRY:?CONTAINER_REGISTRY is unset or empty}"
 : "${VERSION:?VERSION is unset or empty}"
 
-# Use docker buildx build if you want to build the image for multiple platforms
+# Build the Docker image
 docker buildx build \
-  --platform linux/amd64,linux/arm64 \
+  --platform linux/amd64 \
   -t "${CONTAINER_REGISTRY}/video-streaming:${VERSION}" \
   --file ./Dockerfile-prod \
   .
 
-# If you are not using buildx and want to push the image to your registry:
-# docker push "${CONTAINER_REGISTRY}/video-streaming:${VERSION}"
+# Push the image to Azure Container Registry
+docker push "${CONTAINER_REGISTRY}/video-streaming:${VERSION}"
